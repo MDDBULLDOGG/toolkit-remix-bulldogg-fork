@@ -27,6 +27,7 @@ from omni.flux.asset_importer.core.data_models.constants import (
 from omni.flux.utils.common import reset_default_attrs as _reset_default_attrs
 from omni.flux.utils.widget.file_pickers import open_file_picker as _open_file_picker
 from omni.flux.utils.widget.hover import hover_helper as _hover_helper
+from omni.flux.utils.widget.tree_widget import TreeWidget as _TreeWidget
 
 from .model import Delegate, Model
 
@@ -219,13 +220,14 @@ class ScanFolderWidget:
                             name="PropertiesPaneSection",
                             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
                         ):
-                            self._tree = ui.TreeView(
+                            self._tree = _TreeWidget(
                                 self._model,
                                 delegate=self._delegate,
                                 root_visible=False,
                                 header_visible=False,
                                 padding=self._WIDGET_PADDING,
                             )
+                            # Not sure if we still need this the selection change?
                             self._tree.set_selection_changed_fn(self._model.set_items_selected)
                 with ui.HStack(height=self._MANIPULATOR_HEIGHT, spacing=ui.Pixel(self._WIDGET_PADDING)):
                     ui.Spacer(height=0, width=self._LABEL_WIDTH)

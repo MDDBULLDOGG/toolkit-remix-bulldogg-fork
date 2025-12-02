@@ -16,9 +16,10 @@
 """
 
 import omni.ui as ui
+from omni.flux.utils.widget.tree_widget import TreeDelegateBase as _TreeDelegateBase
 
 
-class Delegate(ui.AbstractItemDelegate):
+class Delegate(_TreeDelegateBase):
     """Delegate for TreeView"""
 
     _WIDGET_PADDING = 8
@@ -105,24 +106,36 @@ class Delegate(ui.AbstractItemDelegate):
         if item is None:
             return
         if column_id == 0:
-            with ui.VStack(height=ui.Pixel(self._ROW_HEIGHT)):
-                ui.Spacer(height=ui.Pixel(self._ROW_PADDING))
-                with ui.HStack(
-                    mouse_pressed_fn=lambda x, y, b, m: self._show_context_menu(b, model),
-                    height=ui.Pixel(self._LABEL_HEIGHT),
-                ):
+            with ui.ZStack():
+                with ui.HStack():
                     ui.Spacer(width=ui.Pixel(self._ROW_PADDING))
-                    checkbox = ui.CheckBox(
-                        mouse_pressed_fn=lambda x, y, b, m: self._set_value(item, model),
-                        width=ui.Pixel(self._CHECKBOX_WIDTH),
-                    )
-                    checkbox.name = item.path.name
-                    checkbox.model.set_value(item.value)
-                    self._checkboxes[checkbox.name] = checkbox
-                    self._scroll_frames[id(item)] = ui.ScrollingFrame(
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
-                    )
-                    with self._scroll_frames[id(item)]:
-                        ui.Label(str(item.path), tooltip=str(item.path), identifier="found_item")
-                ui.Spacer(height=ui.Pixel(self._ROW_PADDING))
+                    with ui.VStack(width=ui.Pixel(self._CHECKBOX_WIDTH)):
+                        ui.Spacer(height=ui.Pixel(self._ROW_PADDING))
+                        checkbox = ui.CheckBox(
+                            width=ui.Pixel(self._CHECKBOX_WIDTH),
+                        )
+
+                        checkbox.name = item.path.name
+                        checkbox.model.set_value(item.value)
+                        checkbox.model.add_value_changed_fn(
+                            lambda value_model: self._set_value(item, model)
+                        )
+
+                        self._checkboxes[checkbox.name] = checkbox
+
+                    with ui.Frame(
+                        height=0,
+                        separate_window=True,
+                        tooltip=str(item.path), identifier="found_item",
+                    ):
+                        with ui.ZStack():
+                            self._scroll_frames[id(item)] = ui.ScrollingFrame(
+                                height=ui.Pixel(self._ROW_HEIGHT),
+                                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                                scroll_y_max=0,
+                            )
+
+                            with self._scroll_frames[id(item)]:
+                                with ui.HStack():
+                                    ui.Label(str(item.path))
