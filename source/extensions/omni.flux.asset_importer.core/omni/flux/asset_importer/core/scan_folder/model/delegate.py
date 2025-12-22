@@ -34,6 +34,7 @@ class Delegate(_TreeDelegateBase):
         self._checkboxes = {}
         self._scroll_frames = {}
         self._select_button = None
+        self._clicked_item = None
 
     def set_selection_button(self, button):
         self._select_button = button
@@ -49,6 +50,12 @@ class Delegate(_TreeDelegateBase):
         pass
 
     def _set_value(self, item, model):
+
+        # To avoid a loop, we don't want to run this for every selection when we're setting value via multi-select.
+        # So, only run this value once via the user-selected checkbox.
+        if self._clicked_item is not item.path.name:
+            return
+
         if item.value:
             item.value = False
         else:
@@ -79,6 +86,9 @@ class Delegate(_TreeDelegateBase):
                 self._checkboxes[str(child.path.name)].model.set_value(val)
                 values.append(val)
         self._select_button.enabled = any(values)
+
+    def _on_checkbox_clicked(self, item, checkbox):
+        self._clicked_item = item.path.name
 
     def _show_context_menu(self, button, model):
         if button != 1:
@@ -113,6 +123,7 @@ class Delegate(_TreeDelegateBase):
                         ui.Spacer(height=ui.Pixel(self._ROW_PADDING))
                         checkbox = ui.CheckBox(
                             width=ui.Pixel(self._CHECKBOX_WIDTH),
+                            mouse_pressed_fn=lambda x, y, b, m: self._on_checkbox_clicked(item, checkbox),
                         )
 
                         checkbox.name = item.path.name
