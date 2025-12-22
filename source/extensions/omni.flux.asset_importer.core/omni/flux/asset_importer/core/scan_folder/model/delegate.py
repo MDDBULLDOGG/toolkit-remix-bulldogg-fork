@@ -117,7 +117,10 @@ class Delegate(_TreeDelegateBase):
             return
         if column_id == 0:
             with ui.ZStack():
-                with ui.HStack():
+                with ui.HStack(
+                    mouse_pressed_fn=lambda x, y, b, m: self._show_context_menu(b, model),
+                    height=ui.Pixel(self._LABEL_HEIGHT),
+                ):
                     ui.Spacer(width=ui.Pixel(self._ROW_PADDING))
                     with ui.VStack(width=ui.Pixel(self._CHECKBOX_WIDTH)):
                         ui.Spacer(height=ui.Pixel(self._ROW_PADDING))
